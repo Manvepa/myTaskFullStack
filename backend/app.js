@@ -6,11 +6,19 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
+// Inicializando la aplicación Express
 const app = express();
 
 // Middlewares básicos
 app.use(cors());
 app.use(express.json()); // Para leer JSON en peticiones
+
+// Importando las rutas de autenticación
+const authRoutes = require('./routes/authRoutes');
+
+// Usando las rutas de autenticación
+app.use('/api/auth', authRoutes);
+
 
 // Conexión a MongoDB
 mongoose.connect(process.env.MONGO_URI)
