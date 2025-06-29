@@ -1,6 +1,6 @@
-// Este controlador maneja la creación y obtención de tareas.
-// La función `createTask` permite a un usuario autenticado crear una nueva tarea,
-// mientras que `getTasks` recupera todas las tareas del usuario autenticado.
+// Este controlador maneja la creación, obtención, actualización y eliminación de tareas.
+// Todas las funciones requieren que el usuario esté autenticado.
+// El middleware `authMiddleware` debe haberse ejecutado antes para que `req.user` esté disponible.
 
 const Task = require('../models/Task'); // Importa el modelo de Tarea
 
@@ -15,17 +15,16 @@ const createTask = async (req, res) => {
       return res.status(400).json({ message: 'Todos los campos son obligatorios' });
     }
 
-    // Obtiene el ID del usuario autenticado desde req.user
-    // (este valor es proporcionado por el middleware de autenticación JWT)
+    // Obtiene el ID del usuario autenticado desde req.user (lo coloca el middleware JWT)
     const userId = req.user.id;
 
     // Crea una nueva tarea con los datos proporcionados
     const newTask = new Task({
-      user: userId,       // Relación con el usuario que crea la tarea
-      title,              // Título de la tarea
-      description,        // Descripción de la tarea
-      time,               // Hora asignada
-      date                // Fecha asignada
+      user: userId,
+      title,
+      description,
+      time,
+      date
     });
 
     await newTask.save(); // Guarda la tarea en la base de datos
@@ -34,7 +33,6 @@ const createTask = async (req, res) => {
     res.status(201).json({ message: 'Tarea creada exitosamente', task: newTask });
   } catch (error) {
     console.error('❌ Error al crear tarea:', error);
-    // Maneja errores internos
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
@@ -42,21 +40,72 @@ const createTask = async (req, res) => {
 // Función para obtener todas las tareas del usuario autenticado
 const getTasks = async (req, res) => {
   try {
-    // Obtiene el ID del usuario autenticado desde req.user
     const userId = req.user.id;
 
-    // Busca todas las tareas del usuario autenticado
-    // `.populate()` permite incluir datos del usuario (nombre y correo) en cada tarea
+    // Busca todas las tareas del usuario y muestra info básica del usuario
     const tasks = await Task.find({ user: userId }).populate('user', 'name email');
 
-    // Responde con las tareas encontradas
     res.status(200).json(tasks);
   } catch (error) {
     console.error('❌ Error al obtener tareas:', error);
-    // Maneja errores internos
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
 
-// Exporta las funciones del controlador para usarlas en las rutas
-module.exports = { createTask, getTasks };
+// Función para actualizar una tarea específica por ID (requiere que sea del usuario autenticado)
+const updateTask = async (req, res) => {
+  try {
+    const taskId = req.params.id;
+    const userId = req.user.id;
+    const { title, description, time, date } = req.body;
+
+    // Verifica que todos los campos necesarios estén presentes
+    if (!title || !description || !time || !date) {
+      return res.status(400).json({ message: 'Todos los campos son obligatorios' });
+    }
+
+    // Busca y actualiza solo si la tarea pertenece al usuario
+    const updatedTask = await Task.findOneAndUpdate(
+      { _id: taskId, user: userId },
+      { title, description, time, date },
+      { new: true }
+    ).populate('user', 'name email');
+
+    if (!updatedTask) {
+      return res.status(404).json({ message: 'Tarea no encontrada o no autorizada' });
+    }
+
+    res.status(200).json({ message: 'Tarea actualizada exitosamente', task: updatedTask });
+  } catch (error) {
+    console.error('❌ Error al actualizar tarea:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
+// Función para eliminar una tarea específica por ID (requiere que sea del usuario autenticado)
+const deleteTask = async (req, res) => {
+  try {
+    const taskId = req.params.id;
+    const userId = req.user.id;
+
+    // Busca y elimina solo si la tarea pertenece al usuario
+    const deletedTask = await Task.findOneAndDelete({ _id: taskId, user: userId });
+
+    if (!deletedTask) {
+      return res.status(404).json({ message: 'Tarea no encontrada o no autorizada' });
+    }
+
+    res.status(200).json({ message: 'Tarea eliminada exitosamente' });
+  } catch (error) {
+    console.error('❌ Error al eliminar tarea:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
+// Exporta todas las funciones del controlador
+module.exports = {
+  createTask,
+  getTasks,
+  updateTask,
+  deleteTask
+};
