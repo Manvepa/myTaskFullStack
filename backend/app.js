@@ -16,6 +16,11 @@ app.use(express.json()); // Para leer JSON en peticiones
 // Importando las rutas de autenticación
 const authRoutes = require('./routes/authRoutes');
 
+// Importando las rutas de tareas
+const taskRoutes = require('./routes/taskRoutes');
+// Usando las rutas de tareas
+app.use('/api/tasks', taskRoutes);
+
 // Usando las rutas de autenticación
 app.use('/api/auth', authRoutes);
 
