@@ -22,6 +22,9 @@ const authMiddleware = (req, res, next) => {
       name: decoded.name
     };
 
+    // ✅ Consola para verificar qué usuario se está autenticando
+    console.log('✅ Usuario autenticado en middleware:', req.user);
+
     next(); // Continuar con la siguiente función (por ejemplo, el controlador)
   } catch (error) {
     return res.status(401).json({ message: 'Token inválido o expirado' });

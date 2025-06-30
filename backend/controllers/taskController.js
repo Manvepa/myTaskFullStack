@@ -41,9 +41,11 @@ const createTask = async (req, res) => {
 const getTasks = async (req, res) => {
   try {
     const userId = req.user.id;
+    console.log("🔍 Buscando tareas para userId:", userId)
 
     // Busca todas las tareas del usuario y muestra info básica del usuario
     const tasks = await Task.find({ user: userId }).populate('user', 'name email');
+    console.log('📤 Tareas encontradas:', tasks);
 
     res.status(200).json(tasks);
   } catch (error) {
