@@ -1,13 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Eye, Mail, Lock, ArrowRight, Shield, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api';
+import { jwtDecode } from 'jwt-decode'; 
 
 function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      if (decoded && decoded.exp * 1000 > Date.now()) {
+        navigate('/tasks'); // Redirige si el token es válido
+      }
+    } catch (err) {
+      console.error('Token inválido:', err);
+    }
+  }
+}, []);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
