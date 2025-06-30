@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, Mail, Lock, ArrowRight, Shield, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import API from '../api';
 
 function Login() {
   const navigate = useNavigate();
@@ -11,13 +11,17 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     try {
-      const res = await axios.post('http://localhost:3000/api/auth/login', {
+      const res = await API.post('/auth/login', {
         email,
         password,
       });
 
+      // Guardar el token en localStorage
       localStorage.setItem('token', res.data.token);
+
+      // Redireccionar al dashboard o página protegida
       navigate('/tasks');
     } catch (err) {
       setError(err.response?.data?.message || 'Credenciales incorrectas');
