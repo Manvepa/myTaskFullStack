@@ -8,7 +8,7 @@ const Task = require('../models/Task'); // Importa el modelo de Tarea
 const createTask = async (req, res) => {
   try {
     // Extrae los datos de la tarea del cuerpo de la solicitud
-    const { title, description, time, date } = req.body;
+    const { title, description, time, date, completed = false } = req.body;
 
     // Verifica que todos los campos necesarios estén presentes
     if (!title || !description || !time || !date) {
@@ -24,7 +24,8 @@ const createTask = async (req, res) => {
       title,
       description,
       time,
-      date
+      date,
+      completed
     });
 
     await newTask.save(); // Guarda la tarea en la base de datos
@@ -57,17 +58,24 @@ const updateTask = async (req, res) => {
   try {
     const taskId = req.params.id;
     const userId = req.user.id;
-    const { title, description, time, date } = req.body;
 
-    // Verifica que todos los campos necesarios estén presentes
-    if (!title || !description || !time || !date) {
-      return res.status(400).json({ message: 'Todos los campos son obligatorios' });
+    // Solo se permite actualizar campos válidos
+    const allowedFields = ['title', 'description', 'time', 'date', 'completed'];
+    const updateData = {};
+
+    for (const key of allowedFields) {
+      if (req.body[key] !== undefined) {
+        updateData[key] = req.body[key];
+      }
     }
 
-    // Busca y actualiza solo si la tarea pertenece al usuario
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ message: 'No se proporcionaron campos válidos para actualizar' });
+    }
+
     const updatedTask = await Task.findOneAndUpdate(
       { _id: taskId, user: userId },
-      { title, description, time, date },
+      updateData,
       { new: true }
     ).populate('user', 'name email');
 
@@ -81,6 +89,7 @@ const updateTask = async (req, res) => {
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
+
 
 // Función para eliminar una tarea específica por ID (requiere que sea del usuario autenticado)
 const deleteTask = async (req, res) => {

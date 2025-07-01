@@ -42,15 +42,23 @@ const TaskList = () => {
     navigate('/login');
   };
 
-  const toggleComplete = async (taskId, currentStatus) => {
-    try {
-      await API.put(`/tasks/${taskId}`, { completed: !currentStatus });
-      const res = await API.get('/tasks');
-      setTareas(res.data);
-    } catch (err) {
-      console.error('Error al cambiar estado de tarea:', err);
-    }
-  };
+  const toggleComplete = async (tarea) => {
+  try {
+    const token = localStorage.getItem('token');
+    await API.put(`/tasks/${tarea._id}`, {
+      completed: !tarea.completed,
+    }, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const res = await API.get('/tasks');
+    setTareas(res.data);
+  } catch (err) {
+    console.error('Error al cambiar estado de tarea:', err);
+  }
+};
+
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden text-white">
@@ -134,7 +142,7 @@ const TaskList = () => {
                   {/* Estado de tarea */}
                   <div className="mt-4">
                     <button
-                      onClick={() => toggleComplete(tarea._id, tarea.completed)}
+                      onClick={() => toggleComplete(tarea)}
                       className={`flex items-center gap-2 text-sm px-3 py-1 rounded-full ${tarea.completed ? 'bg-yellow-600 text-white' : 'bg-green-600 text-white'
                         } hover:scale-105 transition`}
                     >
