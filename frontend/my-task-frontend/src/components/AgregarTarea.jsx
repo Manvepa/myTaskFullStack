@@ -64,6 +64,7 @@ const AgregarTarea = ({ isOpen, onClose, onTareaAgregada }) => {
               Título de la tarea
             </label>
             <input
+              style={{color: '#1f2937'}}
               type="text"
               name="title"
               placeholder="Ej: Revisar documentos importantes"
@@ -80,6 +81,7 @@ const AgregarTarea = ({ isOpen, onClose, onTareaAgregada }) => {
               Descripción
             </label>
             <textarea
+              style={{color: '#1f2937'}}
               name="description"
               placeholder="Describe los detalles de tu tarea..."
               value={formData.description}
@@ -97,6 +99,7 @@ const AgregarTarea = ({ isOpen, onClose, onTareaAgregada }) => {
                 Hora
               </label>
               <input
+                style={{color: '#1f2937'}}
                 type="time"
                 name="time"
                 value={formData.time}
@@ -110,6 +113,7 @@ const AgregarTarea = ({ isOpen, onClose, onTareaAgregada }) => {
                 Fecha
               </label>
               <input
+                style={{color: '#1f2937'}}
                 type="date"
                 name="date"
                 value={formData.date}
